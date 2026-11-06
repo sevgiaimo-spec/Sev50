@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>New York • 50 Ans • Guide Ultime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card { background: #FFFFFF; border: 1px solid #F1F5F9; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active { background: #0F172A !important; color: #FFFFFF !important; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+        .day-map { height: 260px; width: 100%; border-radius: 1rem; z-index: 10; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 h-full flex flex-col antialiased selection:bg-rose-500 selection:text-white">
+
+    <!-- En-tête fixe -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 py-3 shadow-sm">
+        <div class="max-w-xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-lg shadow-md shadow-slate-900/20">50</div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-tight text-slate-900">NYC • 50 ANS</h1>
+                    <p class="text-[11px] text-slate-500 font-medium">1–6 Mars 2027 • Hilton Club 57th</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-100">
+                    <i class="fa-solid fa-heart mr-1 text-[10px]"></i> Spécial
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenu Principal -->
+    <main class="flex-1 max-w-xl w-full mx-auto px-4 py-6 pb-32 overflow-y-auto no-scrollbar">
+        
+        <!-- VUE ACCUEIL -->
+        <div id="view-home" class="space-y-6">
+            <div class="relative rounded-3xl overflow-hidden glass-card p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white shadow-xl">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-rose-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 space-y-4">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-rose-500/30 text-rose-300 border border-rose-500/30">J-0 &bull; Le Grand Voyage</span>
+                    <h2 class="text-2xl font-black tracking-tight leading-tight">Joyeux 50ème Anniversaire à New York !</h2>
+                    <p class="text-slate-300 text-xs leading-relaxed">Votre guide interactif personnalisé avec itinéraire heure par heure, restaurants et carte interactive pour chaque journée.</p>
+                    
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
+                            <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Hôtel</div>
+                            <div class="text-xs font-bold text-white mt-0.5 truncate">Hilton Club 57th St</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
+                            <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Ambiance</div>
+                            <div class="text-xs font-bold text-white mt-0.5">Magique & Sur-mesure</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="switchTab('itinerary')" class="p-4 rounded-2xl glass-card text-left hover:border-slate-300 transition group flex flex-col justify-between">
+                    <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold mb-3 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900">Programme par Heure</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">Trajets & Cartes du jour</div>
+                    </div>
+                </button>
+                <button onclick="switchTab('photos')" class="p-4 rounded-2xl glass-card text-left hover:border-slate-300 transition group flex flex-col justify-between">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold mb-3 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-900">Galerie Photos</div>
+                        <div class="text-[11px] text-slate-500 mt-0.5">Inspirations NYC</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- VUE ITINÉRAIRE DÉTAILLÉ -->
+        <div id="view-itinerary" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-black text-slate-900">Programme & Cartes</h2>
+                <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Mars 2027</span>
+            </div>
+
+            <!-- Sélecteur de Jours -->
+            <div class="flex space-x-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="switchDay(1)" id="day-btn-1" class="day-tab px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white shrink-0 shadow-sm">1 Mars</button>
+                <button onclick="switchDay(2)" id="day-btn-2" class="day-tab px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">2 Mars</button>
+                <button onclick="switchDay(3)" id="day-btn-3" class="day-tab px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">3 Mars</button>
+                <button onclick="switchDay(4)" id="day-btn-4" class="day-tab px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">4 Mars</button>
+                <button onclick="switchDay(5)" id="day-btn-5" class="day-tab px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">5 Mars</button>
+                <button onclick="switchDay(6)" id="day-btn-6" class="day-tab px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 shrink-0">6 Mars</button>
+            </div>
+
+            <!-- JOUR 1 -->
+            <div id="day-content-1" class="day-content space-y-4">
+                <div class="glass-card rounded-3xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Jour 1 • Lundi 1 Mars</span>
+                        <button onclick="locateUserOnDay(1)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Ma position
+                        </button>
+                    </div>
+                    <div id="map-day-1" class="day-map"></div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Planning Heure par Heures</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-xs font-bold shrink-0">15h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Arrivée & Check-in Hôtel</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Installation au Hilton Club 135 W 57th St.</p>
+                                <span class="text-[10px] text-slate-400 font-medium"><i class="fa-solid fa-walk"></i> Sur place</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">18h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Balade 5th Avenue & Times Square</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Première immersion féérique sous les écrans géants nocturnes.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 12 min à pied (900m)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">20h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Restaurant : Joe's Pizza Times Square</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Dîner sur le pouce authentique Slice à l'américaine (1435 Broadway).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 3 min à pied</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOUR 2 -->
+            <div id="day-content-2" class="day-content hidden space-y-4">
+                <div class="glass-card rounded-3xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Jour 2 • Mardi 2 Mars</span>
+                        <button onclick="locateUserOnDay(2)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Ma position
+                        </button>
+                    </div>
+                    <div id="map-day-2" class="day-map"></div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Planning Heure par Heures</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">09h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Petit-Déjeuner : Pershing Square Cafe</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Pancakes face à la gare (90 E 42nd St).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-subway"></i> Métro F/M puis à pied : 15 min</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">10h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Visite Grand Central Terminal & Whispering Gallery</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Exploration de la voûte céleste et de la New York Public Library.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 5 min à pied</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">13h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Déjeuner : UrbanSpace Vanderbilt</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Food hall gourmand aux spécialités variées.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 3 min à pied</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">16h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Visite : Top of the Rock (Sunset)</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Coucher de soleil spectaculaire sur l'Empire State Building et Central Park.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 10 min à pied</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">20h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Dîner : Carmine's Italian Restaurant Midtown</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Plats italiens familiaux et généreux (200 W 44th St).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 8 min à pied</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOUR 3 -->
+            <div id="day-content-3" class="day-content hidden space-y-4">
+                <div class="glass-card rounded-3xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Jour 3 • Mercredi 3 Mars</span>
+                        <button onclick="locateUserOnDay(3)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Ma position
+                        </button>
+                    </div>
+                    <div id="map-day-3" class="day-map"></div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Planning Heure par Heures</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">08h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Trajet vers Battery Park</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Embarquement pour la Statue de la Liberté.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-subway"></i> Métro N/R depuis 57th St : 22 min</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">09h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Statue de la Liberté & Ellis Island</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Croisière et visite du musée de l'immigration.</p>
+                                <span class="text-[10px] text-slate-400 font-medium"><i class="fa-solid fa-ship"></i> Ferry spécial inclus</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">13h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Déjeuner : Fraunces Tavern</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Le plus ancien pub de New York rempli d'histoire (54 Pearl St).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 8 min à pied depuis le ferry</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">15h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Wall Street, Charging Bull & 9/11 Memorial</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Recueillement aux bassin du Mémorial et visite de l'Oculus.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 10 min à pied</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">20h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Dîner : Crown Shy</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Cuisine raffinée étoilée au Financial District (70 Pine St).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 7 min à pied</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOUR 4 -->
+            <div id="day-content-4" class="day-content hidden space-y-4">
+                <div class="glass-card rounded-3xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Jour 4 • Jeudi 4 Mars</span>
+                        <button onclick="locateUserOnDay(4)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Ma position
+                        </button>
+                    </div>
+                    <div id="map-day-4" class="day-map"></div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Planning Heure par Heures</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">10h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Traversée du Brooklyn Bridge</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Marche mythique depuis Manhattan vers Brooklyn.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-subway"></i> Métro 4/5 jusqu'à Brooklyn Bridge : 18 min</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">11h45</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Photos à DUMBO & Brooklyn Heights</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Vue célèbre sur l'Empire State entre les piliers du Manhattan Bridge.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 5 min à pied</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">13h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Déjeuner : Time Out Market Brooklyn</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Rooftop gastronomique avec vue panoramique sur les ponts (55 Water St).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 2 min à pied</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">20h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Dîner : Cecconi's DUMBO</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Restaurant italien chic face à la skyline éclairée de Manhattan.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 3 min à pied</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOUR 5 -->
+            <div id="day-content-5" class="day-content hidden space-y-4">
+                <div class="glass-card rounded-3xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Jour 5 • Vendredi 5 Mars</span>
+                        <button onclick="locateUserOnDay(5)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Ma position
+                        </button>
+                    </div>
+                    <div id="map-day-5" class="day-map"></div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-5 space-y-4 bg-gradient-to-br from-rose-50/50 to-white border border-rose-100">
+                    <div class="flex items-center justify-between border-b border-rose-100 pb-2">
+                        <h3 class="text-sm font-black text-rose-900">Jour J &bull; Soirée des 50 Ans</h3>
+                        <span class="text-xs font-bold text-rose-600"><i class="fa-solid fa-cake-candles mr-1"></i> Félicitations</span>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">10h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Balade dans Central Park</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Bethesda Terrace, Bow Bridge et Strawberry Fields.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 5 min à pied depuis l'hôtel</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">13h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Déjeuner : The Loeb Boathouse Central Park</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Cadre bucolique mythique au bord du lac.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 12 min à pied dans le parc</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-xs font-bold shrink-0">20h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Dîner Gala 50 Ans : Quality Bistro</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Brasserie haut de gamme à Midtown (120 W 55th St) pour célèbrer les 50 ans !</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Trajet : 3 min à pied depuis l'hôtel</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOUR 6 -->
+            <div id="day-content-6" class="day-content hidden space-y-4">
+                <div class="glass-card rounded-3xl p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Jour 6 • Samedi 6 Mars</span>
+                        <button onclick="locateUserOnDay(6)" class="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
+                            <i class="fa-solid fa-location-crosshairs mr-1"></i> Ma position
+                        </button>
+                    </div>
+                    <div id="map-day-6" class="day-map"></div>
+                </div>
+
+                <div class="glass-card rounded-3xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Planning Heure par Heures</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold shrink-0">10h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Brunch de Fin de Séjour : Sadelle's SoHo</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Le meilleur des bagels et brunchs new-yorkais (463 W Broadway).</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-subway"></i> Trajet : Métro C/E : 18 min</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold shrink-0">13h00</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Shopping Souvenirs SoHo</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Flânerie dans les boutiques emblématiques de SoHo.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-person-walking"></i> Sur place</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <span class="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-xs font-bold shrink-0">15h30</span>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900">Retour Hôtel & Transfert Aéroport</h4>
+                                <p class="text-xs text-slate-600 mt-0.5">Récupération des bagages au Hilton 57th St et départ.</p>
+                                <span class="text-[10px] text-indigo-600 font-medium"><i class="fa-solid fa-taxi"></i> Taxi / VTC vers JFK ou EWR (approx 50 min)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VUE GALERIE / PHOTOS -->
+        <div id="view-photos" class="hidden space-y-6">
+            <h2 class="text-lg font-black text-slate-900">Ambiance New-Yorkaise</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-2xl overflow-hidden glass-card aspect-square relative group">
+                    <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=600&q=80" alt="NYC Skyline" class="w-full h-full object-cover">
+                </div>
+                <div class="rounded-2xl overflow-hidden glass-card aspect-square relative group">
+                    <img src="https://images.unsplash.com/photo-1534430480872-3498386e7856?auto=format&fit=crop&w=600&q=80" alt="Central Park" class="w-full h-full object-cover">
+                </div>
+                <div class="rounded-2xl overflow-hidden glass-card aspect-square relative group">
+                    <img src="https://images.unsplash.com/photo-1518391846015-55a9cc003b25?auto=format&fit=crop&w=600&q=80" alt="Brooklyn Bridge" class="w-full h-full object-cover">
+                </div>
+                <div class="rounded-2xl overflow-hidden glass-card aspect-square relative group">
+                    <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=600&q=80" alt="Times Square" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Navigation Inférieure -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-slate-100 py-2 px-6">
+        <div class="max-w-xl mx-auto flex justify-around items-center">
+            <button onclick="switchTab('home')" id="nav-home" class="tab-btn active flex flex-col items-center py-1.5 px-4 rounded-2xl text-slate-500 font-semibold text-[11px]">
+                <i class="fa-solid fa-house text-base mb-1"></i> Accueil
+            </button>
+            <button onclick="switchTab('itinerary')" id="nav-itinerary" class="tab-btn flex flex-col items-center py-1.5 px-4 rounded-2xl text-slate-500 font-semibold text-[11px]">
+                <i class="fa-solid fa-calendar-days text-base mb-1"></i> Programme
+            </button>
+            <button onclick="switchTab('photos')" id="nav-photos" class="tab-btn flex flex-col items-center py-1.5 px-4 rounded-2xl text-slate-500 font-semibold text-[11px]">
+                <i class="fa-solid fa-images text-base mb-1"></i> Photos
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        const dayMaps = {};
+
+        const dayData = {
+            1: [
+                { lat: 40.7648, lon: -73.9798, title: "Hilton Club 57th St", desc: "Hôtel" },
+                { lat: 40.7580, lon: -73.9855, title: "Times Square", desc: "Visite" },
+                { lat: 40.7565, lon: -73.9863, title: "Joe's Pizza", desc: "Restaurant (Dîner)" }
+            ],
+            2: [
+                { lat: 40.7648, lon: -73.9798, title: "Hilton Club 57th St", desc: "Hôtel" },
+                { lat: 40.7517, lon: -73.9767, title: "Pershing Square Cafe", desc: "Petit-Déjeuner" },
+                { lat: 40.7527, lon: -73.9772, title: "Grand Central Terminal", desc: "Visite" },
+                { lat: 40.7529, lon: -73.9780, title: "UrbanSpace Vanderbilt", desc: "Restaurant (Déjeuner)" },
+                { lat: 40.7587, lon: -73.9787, title: "Top of the Rock", desc: "Visite" },
+                { lat: 40.7575, lon: -73.9860, title: "Carmine's Italian", desc: "Restaurant (Dîner)" }
+            ],
+            3: [
+                { lat: 40.7648, lon: -73.9798, title: "Hilton Club 57th St", desc: "Hôtel" },
+                { lat: 40.7040, lon: -74.0170, title: "Battery Park Ferry", desc: "Statue de la Liberté" },
+                { lat: 40.7044, lon: -74.0113, title: "Fraunces Tavern", desc: "Restaurant (Déjeuner)" },
+                { lat: 40.7115, lon: -74.0132, title: "9/11 Memorial & Oculus", desc: "Visite" },
+                { lat: 40.7060, lon: -74.0080, title: "Crown Shy", desc: "Restaurant (Dîner)" }
+            ],
+            4: [
+                { lat: 40.7648, lon: -73.9798, title: "Hilton Club 57th St", desc: "Hôtel" },
+                { lat: 40.7061, lon: -73.9969, title: "Brooklyn Bridge", desc: "Visite" },
+                { lat: 40.7033, lon: -73.9881, title: "DUMBO (Washington St)", desc: "Visite Photo" },
+                { lat: 40.7045, lon: -73.9922, title: "Time Out Market", desc: "Restaurant (Déjeuner)" },
+                { lat: 40.7038, lon: -73.9918, title: "Cecconi's DUMBO", desc: "Restaurant (Dîner)" }
+            ],
+            5: [
+                { lat: 40.7648, lon: -73.9798, title: "Hilton Club 57th St", desc: "Hôtel" },
+                { lat: 40.7740, lon: -73.9709, title: "Central Park (Bethesda)", desc: "Visite" },
+                { lat: 40.7753, lon: -73.9688, title: "The Loeb Boathouse", desc: "Restaurant (Déjeuner)" },
+                { lat: 40.7632, lon: -73.9770, title: "Quality Bistro", desc: "Grand Dîner 50 Ans" }
+            ],
+            6: [
+                { lat: 40.7648, lon: -73.9798, title: "Hilton Club 57th St", desc: "Hôtel" },
+                { lat: 40.7251, lon: -74.0003, title: "Sadelle's SoHo", desc: "Restaurant (Brunch)" },
+                { lat: 40.7230, lon: -74.0000, title: "SoHo Shopping District", desc: "Visite" }
+            ]
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            if (tabId === 'itinerary') {
+                setTimeout(() => initDayMap(1), 200);
+            }
+        }
+
+        function switchDay(dayNum) {
+            document.querySelectorAll('.day-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('day-content-' + dayNum).classList.remove('hidden');
+
+            document.querySelectorAll('.day-tab').forEach(btn => {
+                btn.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+            });
+            const activeDayBtn = document.getElementById('day-btn-' + dayNum);
+            activeDayBtn.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+            activeDayBtn.classList.add('bg-slate-900', 'text-white', 'shadow-sm');
+
+            setTimeout(() => initDayMap(dayNum), 150);
+        }
+
+        function initDayMap(dayNum) {
+            if (dayMaps[dayNum]) {
+                dayMaps[dayNum].invalidateSize();
+                return;
+            }
+
+            const mapContainer = document.getElementById(`map-day-${dayNum}`);
+            if (!mapContainer) return;
+
+            const map = L.map(`map-day-${dayNum}`).setView([40.7580, -73.9855], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            const points = dayData[dayNum] || [];
+            const bounds = [];
+
+            points.forEach(pt => {
+                L.marker([pt.lat, pt.lon]).addTo(map)
+                    .bindPopup(`<b>${pt.title}</b><br>${pt.desc}`);
+                bounds.push([pt.lat, pt.lon]);
+            });
+
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [30, 30] });
+            }
+
+            dayMaps[dayNum] = map;
+        }
+
+        function locateUserOnDay(dayNum) {
+            const map = dayMaps[dayNum];
+            if (!map) return;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    map.setView([lat, lon], 15);
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup('<b>Vous êtes ici</b>')
+                        .openPopup();
+                }, () => {
+                    alert("Impossible de récupérer votre position.");
+                });
+            }
+        }
+    </script>
+</body>
+</html>
